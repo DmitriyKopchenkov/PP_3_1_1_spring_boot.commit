@@ -12,67 +12,62 @@ import ru.oparin.pp_3_1_1_spring_boot.service.UserService;
 import javax.validation.Valid;
 
 @Controller
+
 public class UserController {
     private UserService userService;
 
     @Autowired
-    public void setUserService(UserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
     @GetMapping(value = "/")
     public String welcome() {
+
         return "redirect:/users";
     }
 
     @GetMapping(value = "users")
     public String allUsers(ModelMap model) {
-        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("users", userService.index());
         return "users";
     }
 
     @GetMapping(value = "users/add")
-    public String newUserForm(Model model) {
+    public String addUser(Model model) {
         User user = new User();
         model.addAttribute("user", user);
-        return "addUser";
+        return "new";
     }
 
     @PostMapping(value = "users/add")
-    public String createNewUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return "addUser";
-        }
-        userService.addUser(user);
-        return "redirect:/";
+    public String addUser(@ModelAttribute("user") User user) {
+        userService.add(user);
+        return "redirect:/users";
     }
 
     @GetMapping(value = "users/edit/{id}")
     public String editUser(ModelMap model, @PathVariable("id") Long id) {
-        User user = userService.getUserById(id);
+        User user = userService.show(id);
         model.addAttribute("user", user);
-        return "editUser";
+        return "edit";
     }
 
     @PostMapping(value = "users/edit")
-    public String updateUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return "editUser";
-        }
-        userService.editUser(user);
-        return "redirect:/";
+    public String edit(@ModelAttribute("user") User user) {
+        userService.update(user);
+        return "redirect:/users";
     }
 
-    @GetMapping("users/delete")
-    public String deleteUserById(@RequestParam("id") Long id) {
-        userService.deleteUser(id);
-        return "redirect:/";
+    @GetMapping("users/{id}/delete")
+    public String deleteUserById(@PathVariable("id") Long id) {
+        userService.delete(id);
+        return "redirect:/users";
     }
 
     @GetMapping("users/{id}")
     public String show(@PathVariable("id") Long id, ModelMap modelMap) {
-        modelMap.addAttribute("user", userService.getUserById(id));
+        modelMap.addAttribute("user", userService.show(id));
         return "show";
     }
-
 }
